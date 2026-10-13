@@ -10,6 +10,7 @@ db.sqlite3
 __pycache__/
 *.py[cod]
 *$py.class
+__pycache__
 
 # Настройки VS Code
 .vscode/
