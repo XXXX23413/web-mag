@@ -1,51 +1,47 @@
 from django.test import TestCase
 from django.urls import reverse
-from .models import Category,Brand,Product
+from .factories import CategoryFactory,BrandFactory,ProductFactory
 
 
-class Catalog(TestCase):
-    def setUp(self):
-        self.category = Category.objects.create(
-            name = 'Смартфоны',
-            slug = 'smartfony',
-            is_active = True
-        )
-        self.brand = Brand.objects.create(
-            name = 'Apple',
-            slug = 'apple',
-            is_active = True
-        )
-        self.product = Product.objects.create(
-            category= self.category,
-            brand = self.brand,
-            name = 'IPHONE 15',
-            slug = 'iphone-15',
-            price = 99999.00,
-            is_active=True
-        )
+class CatalogTest(TestCase):
+   
     def test_catalog_page_open(self):
+        product = ProductFactory(name = 'IPHONE 15')
         response = self.client.get(reverse('shop:catalog'))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response,'shop/catalog.html')
-        self.assertIn(self.product,response.context['products'])
+        self.assertIn(product,response.context['products'])
         self.assertContains(response,'IPHONE 15')
+        
     def test_catalog_filter_by_category(self):
-        other_category = Category.objects.create(
-            name = 'Наушники',
-            slug = 'naushniki',
-            is_active =True
-        )
-        other_product = Product.objects.create(
-            category= other_category,
-            name ='Sony WH-1000XM5',
-            slug = 'sony-wh-1000xm5',
-            price = 29999.00,
-            is_active =True
-        )        
+        smartphones = CategoryFactory(name = 'Смартфоны',slug='smartfony')
+        headphones = CategoryFactory(name = 'Наушники',slug='naushniki')
+
+        iphone = ProductFactory(name='IPHONE',category=smartphones)
+        sony = ProductFactory(name ='Sony',category = headphones)
+
+        
         response = self.client.get(
             reverse('shop:catalog'),
             {'category':'smartfony'}
         )
         self.assertEqual(response.status_code,200)
-        self.assertIn(self.product,response.context['products'])
-        self.assertNotIn(other_product,response.context['products'])
+        self.assertIn(iphone,response.context['products'])
+        self.assertNotIn(sony,response.context['products'])
+
+    def test_catalog_filter_by_brand(self):
+
+        apple =BrandFactory(name = 'Apple',slug = 'apple')
+        samsung =BrandFactory(name = 'Samsung',slug = 'samsung') 
+
+        iphone =ProductFactory(name = 'Iphone',brand = apple)
+        galaxy =ProductFactory(name = 'Galaxy',brand = samsung)
+
+        response = self.client.get(
+            reverse('shop:catalog'),
+            {'brand':'apple'}
+        )
+
+        self.assertEqual(response.status_code,200)
+        self.assertIn(iphone,response.context['products'])
+        self.assertNotIn(galaxy,response.context['products'])

@@ -52,7 +52,7 @@ class Product(models.Model):
        verbose_name_plural = "Товары"
 
 class ProductSpecification(models.Model):
-   product = models.ForeignKey(Product,on_delete=models.CASCADE,related_name='specifiсation',verbose_name="Товар")
+   product = models.ForeignKey(Product,on_delete=models.CASCADE,related_name='specification',verbose_name="Товар")
    name=models.CharField(max_length=100,verbose_name="Характеристика")
    value = models.CharField(max_length=255,verbose_name="Значение")
 
