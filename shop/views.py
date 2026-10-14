@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from .models import Product,Category,Brand
 
 def catalog(request):
@@ -36,3 +36,16 @@ def catalog(request):
         'current_sort':sort,
     }                        
     return render(request,'shop/catalog.html',context)
+def product_detail(request, slug):
+    product = get_object_or_404(
+        Product.objects.select_related('category','brand'),
+        slug = slug,
+        is_active=True
+    )
+    specifications = product.specification.all()
+
+    context = {
+        'product':product,
+        'specifications':specifications,
+    }
+    return render(request, 'shop/product_detail.html',context)

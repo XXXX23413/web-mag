@@ -23,6 +23,8 @@
         .product-card .price{font-size: 20px;font-weight: bold;color:#e74c3c;margin-top: auto;}
         .product-card .old-price{text-decoration: line-through;color:#999;font-size: 14px;margin-left: 10px;font-weight: normal;}
         .empty{text-align: center;padding: 40px;color: #888;font-size: 18px;}
+        .product-card h3 a {color: #2c3e50;text-decoration: none;}
+        .product-card h3 a:hover {color:#e74c3c;}
     </style>
 
 
@@ -60,7 +62,7 @@
              <img src ="{{product.image.url}}" alt ="{{product.name}}">
              {% endif %}
              <div class="category">{{product.category.name}}{% if product.brand%}·{{product.brand.name}}{%endif%}</div>
-             <h3>{{product.name}}</h3>
+             <h3><a href ="/product/{{product.slug}}/">{{ product.name}}</a></h3>
              <p style ="color:#666;font-size: 13px;">{{product.short_description|default:product.description|truncatewords:12}}</p>
              <div class="price">
                 {{product.price}} ₽
