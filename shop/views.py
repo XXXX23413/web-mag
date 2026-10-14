@@ -2,7 +2,7 @@ from django.shortcuts import render
 from .models import Product,Category,Brand
 
 def catalog(request):
-    products = Product.objects.filter(is_active=True)
+    products = Product.objects.filter(is_active=True).select_related('category','brand')
     categories = Category.objects.filter(is_active=True)
     brands = Brand.objects.filter(is_active=True)
 

@@ -97,7 +97,6 @@ class Order(models.Model):
     ]
     user = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.SET_NULL,null=True,blank=True,related_name='orders',verbose_name='Пользователь')
     number = models.CharField(max_length=20,unique=True,verbose_name="Номер заказа")
-    delivery_address=models.TextField(verbose_name="Адрес доставки")
     status=models.CharField(max_length=20,choices=STATUS_CHOICES,default='new', verbose_name="Статус")
     payment_status = models.CharField(max_length=20,default='Не оплачен',verbose_name="Статус оплаты")
     total_amount = models.DecimalField(max_digits=10,decimal_places=2,default=0,verbose_name="Итоговая сумма")
@@ -124,7 +123,9 @@ class OrderItem(models.Model):
     product_name = models.CharField(max_length=200,verbose_name="Название товара")
     quantity=models.PositiveIntegerField(default=1,verbose_name="Количество")
     price=models.DecimalField(max_digits=10,decimal_places=2,verbose_name="Цена на момент заказа")
-    total_price =models.DecimalField(max_digits=10,decimal_places=2,verbose_name="Сумма по позиции")
+    @property
+    def total_price(self):
+       return self.price * self.quantity
     
     def __str__(self):
         return f"{self.product.name} x {self.quantity} "
