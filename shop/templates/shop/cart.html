@@ -1,0 +1,157 @@
+{% extends 'shop/base.html' %}
+
+{% block title %}Корзина{% endblock %}
+
+{% block content %}
+
+<style>
+    .cart-wrap{
+        background: #fff;
+        border-radius: 8px;
+        padding: 25px;
+    }
+    .cart-wrap h1 {
+        margin-top: 0;
+    }
+    .cart-item{
+        display: grid;
+        grid-template-columns: 80px 1fr auto auto auto;
+        gap: 15px;
+        align-items: center;
+        padding: 15px 0;
+        border-bottom: 1px solid #eee;
+    }
+    .cart-item img{
+        width: 80px;
+        height: 80px;
+        object-fit: contain;
+        background: #f9f9f9;
+        border-radius: 4px;
+    }
+    .cart-item .name {
+        font-weight: bold;
+        font-size: 16px;
+    }
+    .cart-item .name a{
+        color: #2c3e50;
+        text-decoration: none;
+    }
+    .cart-item .name a:hover{
+        color: #e74c3c;
+    }
+    .cart-item .price{
+        color: #666;
+        font-size: 14px;
+    }
+    .quantity-form{
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    .quantity-form input{
+        width: 50px;
+        padding: 5px;
+        text-align: center;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+    }
+    .quantity-form button,
+    .remove-btn {
+        padding: 5px 10px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+    }
+    .quantity-form button{
+        background: #2c3e50;
+        color: white;
+    }
+    .quantity-form button:hover{
+        background: #1a252f;
+    }
+    .remove-btn {
+        background: #e74c3c;
+        color: white;
+    }
+    .remove-btn:hover{
+        background: #c0392b;
+    }
+    .cart-total{
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 20px;
+        margin-top: 20px;
+        font-size: 22px;
+    }
+    .cart-total strong {
+        color: #e74c3c;
+    }
+    .cart-empty {
+        text-align: center;
+        padding: 40px;
+        color:#888;
+    }
+    .cart-empty a{
+        color: #2c3e50;
+    }
+    .checkout-btn{
+        display: inline-block;
+        background: #27ae60;
+        color: white;
+        padding: 12px 30px;
+        border-radius: 4px;
+        text-decoration: none;
+        font-size: 16px;
+    }
+    .checkout-btn:hover{
+        background: #219150;
+    }
+</style>
+
+<div class ="cart-wrap">
+    <h1>Корзина</h1>
+    {% if cart %}
+       {%for item in cart %}
+       <div class = "cart-item">
+        {% if item.product.image %}
+             <img src="{{ item.product.image.url}}" alt ="{{item.product.name}}">
+                 {% else %}
+             <div style = "width: 80px;height: 80px;background: #eee;border-radius: 4px;"></div> 
+                 {% endif %}
+                 
+          <div>
+            <div class="name">
+                <a href ="/product/{{item.product.slug}}/">{{ item.product.name}}</a>
+            </div>
+            <div class="price">{{ item.price}} ₽ за шт. </div>
+          </div> 
+          <form action="/cart/update/{{ item.product.id}}/" method="post" class="quantity-form">
+             {% csrf_token %}
+             <input type="number" name = "quantity" value="{{item.quantity}}" min="1">
+             <button type="submit">Ок</button>
+          </form>
+          <div class = "price">
+            <strong>{{item.total_price}} ₽</strong>
+          </div>
+          <form action="/cart/remove/{{item.product.id}}/" method ="post">
+            {% csrf_token %}
+            <button type ="submit" class="remove-btn">Удалить</button>
+          </form>
+        </div>
+    {% endfor %}
+    <div class ="cart-total">
+        <span>Итого:</span>
+        <strong>{{ cart.get_total_price}} ₽</strong>
+        <a href="/checkout/" class = "checkout-btn">Оформить заказ</a>
+    </div>    
+  {% else %}
+    <div class ="cart-empty">
+        <p>Корзина пуста</p>
+        <a href ="/catalog/">Перейти в каталог</a>
+    </div>      
+  {% endif %}       
+                  
+</div>
+{% endblock %}

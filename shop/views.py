@@ -1,5 +1,8 @@
 from django.shortcuts import render, get_object_or_404
 from .models import Product,Category,Brand
+from django.shortcuts import redirect
+from django.views.decorators.http import require_POST
+from .cart import Cart
 
 def catalog(request):
     products = Product.objects.filter(is_active=True).select_related('category','brand')
@@ -49,3 +52,32 @@ def product_detail(request, slug):
         'specifications':specifications,
     }
     return render(request, 'shop/product_detail.html',context)
+
+@require_POST
+def cart_add(request,product_id):
+    cart = Cart(request)
+    product = get_object_or_404(Product, id=product_id)
+    cart.add(product=product,quantity=1)
+    return redirect('shop:cart_detail')
+
+def cart_detail(request):
+    cart=Cart(request)
+    return render(request,'shop/cart.html',{'cart':cart})
+
+@require_POST
+def cart_remove(request,product_id):
+    cart = Cart(request)
+    product = get_object_or_404(Product,id = product_id)
+    cart.remove(product)
+    return redirect('shop:cart_detail')
+
+@require_POST
+def cart_update(request,product_id):
+    cart=Cart(request)
+    product = get_object_or_404(Product, id=product_id)
+    quantity = int(request.POST.get('quantity',1))
+    if quantity > 0 :
+        cart.add(product=product, quantity=quantity,update_quantity=True)
+    else:
+        cart.remove(product)
+    return redirect('shop:cart_detail')        
