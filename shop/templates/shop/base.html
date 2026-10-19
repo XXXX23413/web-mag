@@ -50,11 +50,11 @@
 <body>
     <header>
         <div class ="logo">
-            <a href="/catalog/">🛒 TechStore </a>
+            <a href="{% url 'shop:catalog' %}">🛒 TechStore </a>
         </div>
         <nav>
-            <a href ="/catalog/">Каталог</a>
-            <a href ="/cart/" id="cart-link">Корзина</a>
+            <a href = "{% url 'shop:catalog' %}">Каталог</a>
+            <a href ="{% url 'shop:cart_detail'%}" id ="cart-link">Корзина {% if cart_total_items %} ({{cart_total_items}}) {%endif%}</a>
             <a href="/admin/">Админка</a>
         </nav>
     </header>

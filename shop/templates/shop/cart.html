@@ -4,7 +4,29 @@
 
 {% block content %}
 
+{% if messages %}
+    {% for message in messages %}
+      <div class ="flash-message {{message.tags}}">{{message}}</div>
+    {%endfor%}
+    {%endif%}  
 <style>
+    .flash-message{
+        padding: 10px 15px;
+        border-radius: 4px;
+        margin-bottom: 15px;
+    }
+    .flash-message.success{
+        background: #d4edda;
+        color:#155724;
+    }
+    .flash-message.error{
+        background: #f8d7da;
+        color: #721c24;
+    }
+    .flash-message.warning{
+        background: #fff3cd;
+        color: #856404
+    }
     .cart-wrap{
         background: #fff;
         border-radius: 8px;
@@ -123,11 +145,11 @@
                  
           <div>
             <div class="name">
-                <a href ="/product/{{item.product.slug}}/">{{ item.product.name}}</a>
+                <a href ="{% url 'shop:product_detail' item.product.slug}">{{ item.product.name}}</a>
             </div>
             <div class="price">{{ item.price}} ₽ за шт. </div>
           </div> 
-          <form action="/cart/update/{{ item.product.id}}/" method="post" class="quantity-form">
+          <form action="{% url 'shop:cart_update' item.product.id %}" method="post" class="quantity-form">
              {% csrf_token %}
              <input type="number" name = "quantity" value="{{item.quantity}}" min="1">
              <button type="submit">Ок</button>
@@ -135,7 +157,7 @@
           <div class = "price">
             <strong>{{item.total_price}} ₽</strong>
           </div>
-          <form action="/cart/remove/{{item.product.id}}/" method ="post">
+          <form action="{% url 'shop:cart_remove' item.product.id %}" method ="post">
             {% csrf_token %}
             <button type ="submit" class="remove-btn">Удалить</button>
           </form>
@@ -149,7 +171,7 @@
   {% else %}
     <div class ="cart-empty">
         <p>Корзина пуста</p>
-        <a href ="/catalog/">Перейти в каталог</a>
+        <a href ="{% url 'shop:catalog' %}">Перейти в каталог</a>
     </div>      
   {% endif %}       
                   

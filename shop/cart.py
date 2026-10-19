@@ -10,21 +10,33 @@ class Cart:
         self.cart = cart 
 
     def add(self,product,quantity=1, update_quantity=False):
+        if not product.is_active or product.stock_quantity <=0:
+            return False
         product_id = str(product.id)
         if product_id not in self.cart:
             self.cart[product_id] = {'quantity':0, 'price': str(product.price)}
 
         if update_quantity:
-            self.cart[product_id] ['quantity'] = quantity
+            new_quantity = quantity
         else:
-            self.cart[product_id]['quantity'] += quantity
-        self.save()
+            new_quantity = self.cart[product_id]['quantity'] + quantity
 
+        if new_quantity > product.stock_quantity:
+            new_quantity = product.stock_quantity
+
+        if new_quantity <=0:
+            del self.cart[product_id]
+        else:
+            self.cart[product_id]['quantity'] = new_quantity
+
+        self.save()
+        return True
+    
     def remove(self,product):
-        product_id = str(product.id)
+        product_id  = str(product.id)
         if product_id in self.cart:
             del self.cart[product_id]
-            self.save()
+            self.save()         
 
     def save(self):
         self.session.modified =True

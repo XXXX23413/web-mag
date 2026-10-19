@@ -62,7 +62,7 @@
              <img src ="{{product.image.url}}" alt ="{{product.name}}">
              {% endif %}
              <div class="category">{{product.category.name}}{% if product.brand%}·{{product.brand.name}}{%endif%}</div>
-             <h3><a href ="/product/{{product.slug}}/">{{ product.name}}</a></h3>
+             <h3><a href ="{% url 'shop:product_detail' product.slug %}">{{ product.name}}</a></h3>
              <p style ="color:#666;font-size: 13px;">{{product.short_description|default:product.description|truncatewords:12}}</p>
              <div class="price">
                 {{product.price}} ₽
@@ -70,6 +70,11 @@
                    <span class ="old-price">{{ product.old_price}} ₽ </span>
                     {%endif %}
              </div>
+               {% if product.stock_quantity > 0 %}
+                <div style = "color: #27ae60;font-size: 13px; margin-top: 5px;"> В наличии :{{ product.stock_quantity}} шт.</div>
+                {% else %}
+                <div style ="color: #e74c3c;font-size: 13px;margin-top: 5px;">Нет в наличии</div>
+                {% endif %}
             </div>
           {%endfor%}  
        </div>

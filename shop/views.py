@@ -3,6 +3,8 @@ from .models import Product,Category,Brand
 from django.shortcuts import redirect
 from django.views.decorators.http import require_POST
 from .cart import Cart
+from django.contrib import messages
+from .forms import CartUpdateForm
 
 def catalog(request):
     products = Product.objects.filter(is_active=True).select_related('category','brand')
@@ -57,7 +59,10 @@ def product_detail(request, slug):
 def cart_add(request,product_id):
     cart = Cart(request)
     product = get_object_or_404(Product, id=product_id)
-    cart.add(product=product,quantity=1)
+    if cart.add(product=product,quantity=1):
+        messages.success(request, f'<<{product.name}>> добавлен в корзину')
+    else:
+        messages.error(request, 'Товар недоступен или закончился на скаде')    
     return redirect('shop:cart_detail')
 
 def cart_detail(request):
@@ -75,9 +80,16 @@ def cart_remove(request,product_id):
 def cart_update(request,product_id):
     cart=Cart(request)
     product = get_object_or_404(Product, id=product_id)
-    quantity = int(request.POST.get('quantity',1))
-    if quantity > 0 :
-        cart.add(product=product, quantity=quantity,update_quantity=True)
+    form =CartUpdateForm(request.POST)
+    if form.is_valid():
+        quantity = form.cleaned_data['quantity']
+        if not cart.add(product=product,quantity=quantity,update_quantity=True):
+            messages.error(request,'Товар недоступен')
+        elif quantity > product.stock_quantity:
+            messages.warning(request, f'На складе только {product.stock_quantity}шт.')
+
+               
     else:
-        cart.remove(product)
-    return redirect('shop:cart_detail')        
+        messages.error(request,'Некорректное количество')
+
+    return redirect('shop:cart_detail')    
