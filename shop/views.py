@@ -5,6 +5,8 @@ from django.views.decorators.http import require_POST
 from .cart import Cart
 from django.contrib import messages
 from .forms import CartUpdateForm
+from .forms import OrderForm
+from .models import Order, OrderItem
 
 def catalog(request):
     products = Product.objects.filter(is_active=True).select_related('category','brand')
@@ -93,3 +95,42 @@ def cart_update(request,product_id):
         messages.error(request,'Некорректное количество')
 
     return redirect('shop:cart_detail')    
+
+def checkout(request):
+    cart = Cart(request)
+
+    if len(cart)==0:
+        messages.warning(request,'Корзина пуста')
+        return redirect('shop:cart_detail')
+
+    if request.method == 'POST':
+        form  = OrderForm(request.POST)
+        if form.is_valid():
+            order = Order.objects.create(
+                customer_name = form.cleaned_data['customer_name'],
+                phone = form.cleaned_data['phone'],
+                email = form.cleaned_data['email'],
+                city = form.cleaned_data['city'],
+                address = form.cleaned_data['address'],
+                comment = form.cleaned_data['comment'],
+                total_amount = cart.get_total_price(),
+                number = f'ORD-{Order.objects.count() + 1:04d}',
+            )
+
+            for item in cart:
+                OrderItem.objects.create(
+                    order = order,
+                    product = item['product'],
+                    product_name = item['product'].name,
+                    quantity = item['quantity'],
+                    price = item['price']
+                )
+            cart.clear()
+            return redirect('shop:order_success', order_id=order.id)
+    else:
+        form = OrderForm()
+    return render (request,'shop/checkout.html',{'cart':cart,'form':form})
+
+def order_success(request,order_id):
+    order = get_object_or_404(Order, id=order_id)
+    return render(request,'shop/order_success.html',{'order':order})            

@@ -166,7 +166,7 @@
     <div class ="cart-total">
         <span>Итого:</span>
         <strong>{{ cart.get_total_price}} ₽</strong>
-        <a href="/checkout/" class = "checkout-btn">Оформить заказ</a>
+        <a href="{% url 'shop:checkout' %}" class = "checkout-btn">Оформить заказ</a>
     </div>    
   {% else %}
     <div class ="cart-empty">
