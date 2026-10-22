@@ -1,0 +1,40 @@
+{% extends 'shop/base.html' %}
+
+{% block title %}Регистрация{% endblock %}
+
+{% block content %}
+<div style = "max-width: 500px;margin: 40px auto;background: #fff;padding: 30px;border-radius: 8px;">
+    <h1 style="margin-top: 0;">Регистрация</h1>
+    <form method="post">
+        {% csrf_token %}
+        {% for field in form %}
+        <div style="margin-bottom: 15px;">
+            <label style = "display: block;margin-bottom: 5px;font-weight: bold;">{{ field.label}} </label>
+            {{ field }}
+            {% if  field.errors %}
+            <div style="color: #e74c3c;font-size: 13px;margin-top: 3px;">{{ field.errors.0}}</div>
+            {% endif %}
+            {% if field.help_text %}
+            <div style="color:#888;font-size: 12px;margin-top: 3px;">{{ field.help_text|safe}}</div>
+            {% endif %}
+        </div>
+        {% endfor %}
+        <button type="submit" style="width: 100%;background: #27ae60;color:white;padding: 12px;border: none;border-radius: 4px;cursor: pointer;font-size: 16px;">Зарегистрироваться</button>
+    </form>
+    <p style="text-align: center;margin-top: 20px;">
+        Уже есть аккаунт? <a href ="{% url 'shop:login' %}" style="color: #2c3e50;">Войти</a>
+    </p>
+</div>
+
+<style>
+    input[type="text"], input[type="password"], input[type="email"]{
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-size: 14px;
+        box-sizing: border-box;
+    }
+</style>
+
+{% endblock %}

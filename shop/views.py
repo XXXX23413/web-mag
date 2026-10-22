@@ -7,6 +7,10 @@ from django.contrib import messages
 from .forms import CartUpdateForm
 from .forms import OrderForm
 from .models import Order, OrderItem
+from django.contrib.auth import login, logout
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import AuthenticationForm
+from .forms import RegisterForm
 
 def catalog(request):
     products = Product.objects.filter(is_active=True).select_related('category','brand')
@@ -95,7 +99,7 @@ def cart_update(request,product_id):
         messages.error(request,'Некорректное количество')
 
     return redirect('shop:cart_detail')    
-
+@login_required
 def checkout(request):
     cart = Cart(request)
 
@@ -107,6 +111,7 @@ def checkout(request):
         form  = OrderForm(request.POST)
         if form.is_valid():
             order = Order.objects.create(
+                user = request.user if request.user.is_authenticated else None,
                 customer_name = form.cleaned_data['customer_name'],
                 phone = form.cleaned_data['phone'],
                 email = form.cleaned_data['email'],
@@ -133,4 +138,48 @@ def checkout(request):
 
 def order_success(request,order_id):
     order = get_object_or_404(Order, id=order_id)
-    return render(request,'shop/order_success.html',{'order':order})            
+    return render(request,'shop/order_success.html',{'order':order}) 
+
+def register_view(request):
+    if request.user.is_authenticated:
+        return redirect('shop:profile')
+
+    if request.method =='POST':
+        form =RegisterForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request,user)
+            messages.success(request, f'Добро пожаловать, {user.username}!')
+            return redirect('shop:profile')
+    else:
+        form =RegisterForm()
+
+    return render(request,'shop/register.html',{'form':form})
+
+def login_view(request):
+    if request.user.is_authenticated:
+        return redirect('shop:profile')
+
+    if request.method =='POST':
+        form = AuthenticationForm(request, data =request.POST)
+        if form.is_valid():
+            user = form.get_user()
+            login(request, user)
+            messages.success(request, f'С возвращением, {user.username}!')
+            next_url = request.GET.get('next', 'shop:profile')
+            return redirect(next_url)
+    else:
+        form = AuthenticationForm()
+    return render(request,'shop/login.html',{'form':form})
+
+def logout_view(request):
+    logout(request)
+    messages.success(request,'Вы вышли из аккаунта')
+    return redirect('shop:catalog')
+
+@login_required
+def profile (request):
+    orders = Order.objects.filter(user = request.user).order_by('-created_at')
+    return render(request, 'shop/profile.html',{'orders':orders})    
+
+                               
