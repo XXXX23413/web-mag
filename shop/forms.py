@@ -53,3 +53,19 @@ class RegisterForm(UserCreationForm):
         self.fields['username'].label = 'Имя пользователя'
         self.fields['password1'].label = 'Пароль'
         self.fields['password2'].label = 'Повторите пароль'    
+
+class SearchForm(forms.Form):
+    search = forms.CharField(
+        max_length=100,
+        required=False,
+        label='Поиск',
+    )
+    category = forms.CharField(max_length=100,required=False)
+    brand = forms.CharField(max_length=100,required=False)
+    sort = forms.ChoiceField(
+        choices=[
+            ('','Сначала новые'),
+            ('price_asc','Цена: по возрастанию'),
+            ('price_desc','Цена: по убыванию'),
+        ], required=False,
+    )

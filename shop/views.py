@@ -4,8 +4,7 @@ from django.shortcuts import redirect
 from django.views.decorators.http import require_POST
 from .cart import Cart
 from django.contrib import messages
-from .forms import CartUpdateForm
-from .forms import OrderForm
+from .forms import CartUpdateForm, OrderForm, SearchForm
 from .models import Order, OrderItem
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
@@ -13,29 +12,32 @@ from django.contrib.auth.forms import AuthenticationForm
 from .forms import RegisterForm
 
 def catalog(request):
+    form = SearchForm(request.GET)
     products = Product.objects.filter(is_active=True).select_related('category','brand')
-    categories = Category.objects.filter(is_active=True)
-    brands = Brand.objects.filter(is_active=True)
+    if form.is_valid():
+        search_query = form.cleaned_data['search'].strip()
+        category_slug=form.cleaned_data['category']
+        brand_slug=form.cleaned_data['brand']
+        sort =form.cleaned_data['sort']
+    else:
+        search_query = category_slug = brand_slug = sort = ''
 
-    category_slug = request.GET.get('category')
     if category_slug:
-        products=products.filter(category__slug=category_slug)
-
-    brand_slug=request.GET.get('brand')
+        products=products.filter(category__slug = category_slug)
     if brand_slug:
-        products=products.filter(brand__slug=brand_slug)
-
-    search_query = request.GET.get('search')
+        products =products.filter(brand__slug = brand_slug)
     if search_query:
-        products=products.filter(name__icontains=search_query)
+        products = products.filter(name__icontains = search_query)
 
-    sort = request.GET.get('sort')
-    if sort =='price_asc':
+    if sort == 'price_asc':
         products = products.order_by('price')
-    elif sort == 'price_desc':
+    elif sort =='price_desc':
         products = products.order_by('-price')
     else:
-        products = products.order_by('-created_at')
+        products=products.order_by('-created_at')
+
+    categories = Category.objects.filter(is_active = True)
+    brands = Brand.objects.filter(is_active=True)
 
     context = {
         'products':products,
@@ -45,16 +47,16 @@ def catalog(request):
         'current_brand':brand_slug,
         'search_query':search_query,
         'current_sort':sort,
-    }                        
-    return render(request,'shop/catalog.html',context)
+    }                       
+    return render(request, 'shop/catalog.html', context)       
+
 def product_detail(request, slug):
     product = get_object_or_404(
-        Product.objects.select_related('category','brand'),
+        Product.objects.select_related('category','brand').prefetch_related('specification'),
         slug = slug,
-        is_active=True
-    )
+        is_active = True
+    )   
     specifications = product.specification.all()
-
     context = {
         'product':product,
         'specifications':specifications,

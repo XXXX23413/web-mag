@@ -1,24 +1,24 @@
 import factory
 from .models import Category,Brand,Product
+from faker import Faker
 
+fake = Faker('ru_RU')
 
 class CategoryFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Category
 
-    name = factory.Sequence(lambda n: f'Категория{n}')
-    slug = factory.Sequence(lambda n: f'category-{n}')
+    name = factory.LazyFunction(lambda: fake.word().capitalize())
+    slug = factory.LazyFunction(lambda: fake.slug())
     is_active = True
-
 
 class BrandFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Brand
 
-    name = factory.Sequence(lambda n: f'Бренд {n}')
-    slug = factory.Sequence(lambda n: f'brand-{n}')
-    is_active = True
-
+    name = factory.LazyFunction(lambda: fake.company())
+    slug = factory.LazyFunction(lambda: fake.slug())
+    is_active=True
 
 class ProductFactory(factory.django.DjangoModelFactory):
     class Meta:
@@ -26,9 +26,9 @@ class ProductFactory(factory.django.DjangoModelFactory):
 
     category = factory.SubFactory(CategoryFactory)
     brand = factory.SubFactory(BrandFactory)
-    name = factory.Sequence(lambda n: f'Товар {n}')
-    slug = factory.Sequence(lambda n: f'product-{n}')
+    name = factory.LazyFunction(lambda:fake.word().capitalize()) 
+    slug = factory.LazyFunction(lambda:fake.slug())
     short_description = 'Тестовое описание'
     price = 1000.00
-    stock_quantity =10 
-    is_active = True                    
+    stock_quantity = 10
+    is_active =True                   
