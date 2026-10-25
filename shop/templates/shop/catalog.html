@@ -53,6 +53,7 @@
             <option value = "price_desc" {% if current_sort == 'price_desc'%}selected{% endif%}>Цена: по убыванию</option>
         </select>
         <button type = "submit">Применить</button>
+        <a href ="{% url 'shop:catalog' %}" style="display: inline-block;padding: 8px 12px;background: #e74c3c;color: white;text-decoration: none;border-radius: 4px;font-size: 14px;">Сбросить</a>
      </form>
      {% if products %}
        <div class="products">

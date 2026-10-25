@@ -96,7 +96,14 @@ class Order(models.Model):
        ('cancelled','Отменен'),
     ]
     user = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.SET_NULL,null=True,blank=True,related_name='orders',verbose_name='Пользователь')
-    number = models.CharField(max_length=20,unique=True,verbose_name="Номер заказа")
+    number = models.CharField(max_length=20,unique=True,blank=True,verbose_name="Номер заказа")
+    def save(self, *args, **kwargs):
+       if not self.number:
+          super().save(*args, **kwargs)
+          self.number = f'ORD-{self.id:04d}'
+          super().save(update_fields=['number'])
+       else:
+          super().save(*args, **kwargs)   
     status=models.CharField(max_length=20,choices=STATUS_CHOICES,default='new', verbose_name="Статус")
     payment_status = models.CharField(max_length=20,default='Не оплачен',verbose_name="Статус оплаты")
     total_amount = models.DecimalField(max_digits=10,decimal_places=2,default=0,verbose_name="Итоговая сумма")

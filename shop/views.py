@@ -10,6 +10,7 @@ from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
 from .forms import RegisterForm
+from django.db import transaction
 
 def catalog(request):
     form = SearchForm(request.GET)
@@ -101,7 +102,7 @@ def cart_update(request,product_id):
         messages.error(request,'Некорректное количество')
 
     return redirect('shop:cart_detail')    
-@login_required
+
 def checkout(request):
     cart = Cart(request)
 
@@ -112,28 +113,48 @@ def checkout(request):
     if request.method == 'POST':
         form  = OrderForm(request.POST)
         if form.is_valid():
-            order = Order.objects.create(
-                user = request.user if request.user.is_authenticated else None,
-                customer_name = form.cleaned_data['customer_name'],
-                phone = form.cleaned_data['phone'],
-                email = form.cleaned_data['email'],
-                city = form.cleaned_data['city'],
-                address = form.cleaned_data['address'],
-                comment = form.cleaned_data['comment'],
-                total_amount = cart.get_total_price(),
-                number = f'ORD-{Order.objects.count() + 1:04d}',
-            )
+            try:
+                with transaction.atomic():
+                    product_ids = [item['product'].id for item in cart]
+                    locked ={
+                        p.id: p for p in Product.objects.select_for_update().filter(id__in = product_ids)
+                    }
+                    for item in cart:
+                        p = locked[item['product'].id]
+                        if item['quantity'] > p.stock_quantity:
+                            messages.error(
+                                request,
+                                f'Товар «{p.name}» закончился. Осталось {p.stock_quantity} шт.'
+                            )
+                            return redirect('shop:cart_detail')
 
-            for item in cart:
-                OrderItem.objects.create(
-                    order = order,
-                    product = item['product'],
-                    product_name = item['product'].name,
-                    quantity = item['quantity'],
-                    price = item['price']
+                    order = Order.objects.create(
+                        user = request.user if request.user.is_authenticated else None,
+                        customer_name = form.cleaned_data['customer_name'],
+                        phone = form.cleaned_data['phone'],
+                        email = form.cleaned_data['email'],
+                        city = form.cleaned_data['city'],
+                        address = form.cleaned_data['address'],
+                        comment = form.cleaned_data['comment'],
+                        total_amount = cart.get_total_price(),
                 )
-            cart.clear()
-            return redirect('shop:order_success', order_id=order.id)
+
+                    for item in cart:
+                        p = locked[item['product'].id]
+                        OrderItem.objects.create(
+                            order = order,
+                            product = p,
+                            product_name = p.name,
+                            quantity = item['quantity'],
+                            price = item['price']
+                        )
+                        p.stock_quantity -=item['quantity']
+                        p.save(update_fields=['stock_quantity'])
+                    cart.clear()
+                    return redirect('shop:order_success', order_id=order.id)
+            except Exception as e:
+                messages.error(request,f'Ошибка:{e}')
+                return redirect('shop:cart_detail')
     else:
         form = OrderForm()
     return render (request,'shop/checkout.html',{'cart':cart,'form':form})
