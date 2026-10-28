@@ -151,8 +151,8 @@
           </div> 
           <form action="{% url 'shop:cart_update' item.product.id %}" method="post" class="quantity-form">
              {% csrf_token %}
-             <input type="number" name = "quantity" value="{{item.quantity}}" min="1">
-             <button type="submit">Ок</button>
+             <input type="number" name = "quantity" value="{{item.quantity}}" min="1" max="{{item.product.stock_quantity}}"
+             onchange="this.form.submit()">
           </form>
           <div class = "price">
             <strong>{{item.total_price}} ₽</strong>

@@ -68,11 +68,20 @@ def product_detail(request, slug):
 def cart_add(request,product_id):
     cart = Cart(request)
     product = get_object_or_404(Product, id=product_id)
-    if cart.add(product=product,quantity=1):
-        messages.success(request, f'<<{product.name}>> добавлен в корзину')
+    try:
+        quantity = int(request.POST.get('quantity',1))
+    except (ValueError,TypeError):
+        quantity=1
+
+    if quantity < 1:
+        quantity = 1
+    if cart.add(product=product, quantity=quantity):
+        messages.success(request, f'«{product.name}» ({quantity} шт.) добавлен в корзину')
+
     else:
-        messages.error(request, 'Товар недоступен или закончился на скаде')    
-    return redirect('shop:cart_detail')
+        messages.error(request, 'Товар недоступен или закончился на складе')
+
+    return redirect('shop:cart_detail')                    
 
 def cart_detail(request):
     cart=Cart(request)
@@ -203,6 +212,22 @@ def logout_view(request):
 @login_required
 def profile (request):
     orders = Order.objects.filter(user = request.user).order_by('-created_at')
-    return render(request, 'shop/profile.html',{'orders':orders})    
+    return render(request, 'shop/profile.html',{'orders':orders})   
+
+@login_required
+@require_POST
+def order_cancel(request, order_id):
+    order = get_object_or_404(Order, id = order_id, user=request.user) 
+    if order.status in ('new','processing'):
+        for item in order.items.all():
+            product = item.product
+            product.stock_quantity += item.quantity
+            product.save(update_fields = ['stock_quantity'])
+        order.status = 'cancelled'
+        order.save()
+        messages.success(request, f'Заказ {order.number} отменён')
+    else:
+        messages.error(request, 'Этот заказ нельзя отменить')
+    return redirect('shop:profile')            
 
                                

@@ -37,7 +37,13 @@
                 {% endfor %}
             </table>
         </details>
-
+        {% if order.status == 'new' or order.status == 'processing' %}
+        <form method="post" action = "{% url 'shop:order_cancel' order.id %}" style="margin-top: 10px;"
+        onsubmit="return confirm('Вы уверены, что хотите отменить заказ?');"> 
+        {% csrf_token %}
+        <button type="submit" style="background: #e74c3c;color: white;border: none;padding: 8px 16px;border-radius: 4px;cursor: pointer;font-size: 14px;">Отменить заказ</button>    
+        </form>
+        {% endif %}
     </div>
     {% endfor %}
     {% else %}

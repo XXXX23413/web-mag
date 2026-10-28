@@ -128,8 +128,11 @@
             {{product.description|default:product.short_description|default:"Описание отсутствует"}}
         </div>
 
-        <form method="post" action="{% url 'shop:cart_add' product.id %}">
+        <form method="post" action="{% url 'shop:cart_add' product.id %}" style="display: flex;gap: 10px;align-items: center;margin-top: 15px;">
             {% csrf_token %}
+            <label style="font-size: 14px;">Кол-во:</label>
+            <input type = "number" name = "quantity" value="1" min ="1" max="{{product.stock_quantity}}"
+            style="width: 70px;padding: 8px;border: 1px solid #ccc;border-radius: 4px;text-align: center;">
             <button type ="submit" class="btn-cart">Добавить в корзину</button>
         </form>
     </div>

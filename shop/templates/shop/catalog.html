@@ -76,6 +76,14 @@
                 {% else %}
                 <div style ="color: #e74c3c;font-size: 13px;margin-top: 5px;">Нет в наличии</div>
                 {% endif %}
+                {% if product.stock_quantity > 0 %}
+                <form method="post" action="{% url 'shop:cart_add' product.id %}" style="display: flex;gap: 5px;margin-top: 10px;">
+                    {% csrf_token %}
+                    <input type = "number" name = "quantity" value="1" min ="1" max="{{product.stock_quantity}}"
+                    style = "width: 55px;padding: 6px;border: 1px solid #ccc;border-radius: 4px;text-align: center;">
+                    <button type="submit" style="flex: 1;background: #27ae60;color: white;border: none;padding: 6px 12px;border-radius: 4px;cursor: pointer;font-size: 14px;">В корзину</button>
+                </form>
+                {% endif %}
             </div>
           {%endfor%}  
        </div>
