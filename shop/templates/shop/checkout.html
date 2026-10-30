@@ -4,8 +4,10 @@
 
 {% block content %}
 <style>
-    .checkout-wrap {display: grid;grid-template-columns: 1fr 1fr;gap: 30px;}
+    .checkout-wrap {display: grid;grid-template-columns: 1fr 1fr;gap: 30px;align-items: start;}
     .checkout-form, .checkout-summary{background: #fff;padding: 25px;border-radius: 8px;}
+    .checkout-form {position: sticky;top:20px;}
+    .checkout-summary{max-height: 600px;overflow-y: auto ;}
     .checkout-form h2, .checkout-summary h2{margin-top: 0;}
     .form-group{margin-bottom: 15px;}
     .form-group label{display: block;margin-bottom: 5px;font-weight: bold;font-size: 14px;}
@@ -15,6 +17,13 @@
     .summary-total{display: flex;justify-content: space-between;font-size: 20px;font-weight: bold;margin-top: 15px;color: #e74c3c;}
     .btn-submit {background: #27ae60;color: white;padding: 12px 30px;border: none;border-radius: 4px;font-size: 16px;cursor: pointer;width: 100%;margin-top: 15px;}
     .btn-submit:hover {background: #219150;}
+    .checkout-summary::-webkit-scrollbar{width: 6px;}
+    .checkout-summary::-webkit-scrollbar-thumb{background: #ccc;border-radius: 3px;}
+    @media(max-width: 768px){
+        .checkout-wrap{grid-template-columns: 1fr;}
+        .checkout-form{position: static;}
+        .checkout-summary{max-height: none;}
+    }
 </style>
 
 <h1>Оформление заказа</h1>

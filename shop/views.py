@@ -11,6 +11,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
 from .forms import RegisterForm
 from django.db import transaction
+from django.core.paginator import Paginator
 
 def catalog(request):
     form = SearchForm(request.GET)
@@ -39,9 +40,12 @@ def catalog(request):
 
     categories = Category.objects.filter(is_active = True)
     brands = Brand.objects.filter(is_active=True)
+    paginator = Paginator(products, 12)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
 
     context = {
-        'products':products,
+        'page_obj':page_obj,
         'categories':categories,
         'brands':brands,
         'current_category':category_slug,
@@ -230,4 +234,7 @@ def order_cancel(request, order_id):
         messages.error(request, 'Этот заказ нельзя отменить')
     return redirect('shop:profile')            
 
+def home(request):
+    products = Product.objects.filter(is_active = True).select_related('category', 'brand').order_by('-created_at')[:6]
+    return render(request,'shop/home.html',{'products': products})
                                

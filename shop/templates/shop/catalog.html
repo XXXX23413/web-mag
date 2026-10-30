@@ -25,6 +25,11 @@
         .empty{text-align: center;padding: 40px;color: #888;font-size: 18px;}
         .product-card h3 a {color: #2c3e50;text-decoration: none;}
         .product-card h3 a:hover {color:#e74c3c;}
+        .pagination{display: flex;justify-content: center;align-items: center;gap: 5px;margin-top: 30px;flex-wrap: wrap;}
+        .page-link{display: inline-block;padding: 8px 14px;background: #fff;border: 1px solid #ddd;border-radius: 4px;color: #2c3e50;text-decoration: none;font-size: 14px;transition: all 0.2s;}
+        .page-link:hover{background: #2c3e50;color: white;border-color: #2c3e50;}
+        .page-link.active{background: #2c3e50;color: white;border-color: #2c3e50;font-weight: bold;cursor: default;}
+        .page-link.disabled{color: #ccc;background: #f9f9f9;cursor: not-allowed;}
     </style>
 
 
@@ -55,9 +60,9 @@
         <button type = "submit">Применить</button>
         <a href ="{% url 'shop:catalog' %}" style="display: inline-block;padding: 8px 12px;background: #e74c3c;color: white;text-decoration: none;border-radius: 4px;font-size: 14px;">Сбросить</a>
      </form>
-     {% if products %}
+     {% if page_obj %}
        <div class="products">
-        {%for product in products %}
+        {%for product in page_obj %}
        <div class="product-card">
            {%if product.image %}
              <img src ="{{product.image.url}}" alt ="{{product.name}}">
@@ -90,4 +95,25 @@
     {% else %}
         <div class ="empty">Товаров по вашему запросу не найдено</div>
     {% endif %}  
+    {% if page_obj.has_other_pages %}
+    <div class ="pagination">
+        {% if page_obj.has_previous %}
+        <a href ="?{% if search_query %}search={{search_query}}&{% endif %}{% if current_category %}category={{current_category}}&{% endif %}{% if current_brand %}brand={{ current_brand}}&{% endif %}{% if current_sort%}sort={{current_sort}}&{% endif %}page={{page_obj.previous_page_number}}" class="page-link">Назад</a>
+        {% else %}
+        <span class ="page-link disabled">Назад</span>
+        {% endif %}
+        {% for num in page_obj.paginator.page_range %}
+        {% if page_obj.number == num %}
+        <span class = "page-link active">{{num}}</span>
+        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+        <a href ="?{% if search_query %}search={{search_query}}&{% endif %}{% if current_category %}category={{current_category}}&{% endif %}{% if current_brand%}brand={{current_brand}}&{% endif %}{% if current_sort %}sort={{current_sort}}&{% endif %}page={{num}}" class="page-link">{{num}}</a>
+        {% endif %}
+        {% endfor %}
+        {% if page_obj.has_next %}
+        <a href ="?{% if search_query %}search={{search_query}}&{% endif %}{% if current_category %}category={{current_category}}&{% endif %}{% if current_brand %}brand={{current_brand}}&{% endif %}{% if current_sort %}sort={{current_sort}}&{% endif %}page={{page_obj.next_page_number}}" class="page-link">Вперёд</a>
+        {% else %}
+        <span class = "page-link disabled">Вперёд</span>
+        {% endif %}
+    </div>
+{% endif %}    
 {%endblock%}    
